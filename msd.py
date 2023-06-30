@@ -259,13 +259,13 @@ def main():
     net_liver.eval()
 
     print("Start training Spleen")
-    train(model=net_spleen, train_loader=trainloader_spleen, max_epochs=2, device=DEVICE)
+    train(model=net_spleen, train_loader=trainloader_spleen, max_epochs=100, device=DEVICE)
     print("Validate model Spleen")
     dice_spleen = validate(model=net_spleen, val_loader=testloader_spleen, device=DEVICE)
     print("Dice metric Spleen: ", dice_spleen)
 
     print("Start training Pancreas")
-    train(model=net_liver, train_loader=trainloader_pan, max_epochs=2, device=DEVICE)
+    train(model=net_liver, train_loader=trainloader_pan, max_epochs=100, device=DEVICE)
     print("Validate model Pancreas")
     dice_liver = validate(model=net_liver, val_loader=testloader_pan, device=DEVICE)
     print("Dice metric Liver: ", dice_liver)
