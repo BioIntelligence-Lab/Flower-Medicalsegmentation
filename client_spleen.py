@@ -150,7 +150,7 @@ class MSDClient(fl.client.NumPyClient):
 def main() -> None:
     """Load data, start MSDClient."""
 
-    data_dir_spleen = '/home/adwaykanhere/Documents/SegViz/Task09_Spleen'
+    data_dir_spleen = '/Task09_Spleen'
     # Load data
     trainloader, testloader, num_examples = msd.load_data(data_dir_spleen)
 
