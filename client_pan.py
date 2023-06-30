@@ -149,7 +149,7 @@ class MSDClient(fl.client.NumPyClient):
 def main() -> None:
     """Load data, start MSDClient."""
 
-    data_dir_liver = '/home/adwaykanhere/Documents/SegViz/Task07_Pancreas'
+    data_dir_liver = '/Task07_Pancreas'
     # Load data
     trainloader, testloader, num_examples = msd.load_data(data_dir_liver)
 
