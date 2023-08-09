@@ -49,9 +49,6 @@ from typing import Dict, List, Tuple
 
 import flwr as fl
 
-root_dir = '/home/adwaykanhere/Documents/SegViz/'
-
-
 USE_FEDBN: bool = True
 
 # pylint: disable=no-member
@@ -106,7 +103,7 @@ class MSDClient(fl.client.NumPyClient):
         self.model.train()
         if USE_FEDBN:
             # Return model parameters as a list of NumPy ndarrays, excluding parameters of BN layers when using FedBN
-            return [val.cpu().numpy() for name, val in self.model.state_dict().items() if "model.2" not in name]
+            return [val.cpu().numpy() for name, val in self.model.state_dict().items() if "adn.N" not in name and "model.2" not in name]
         else:
             # Return model parameters as a list of NumPy ndarrays
             return [val.cpu().numpy() for _, val in self.model.state_dict().items()]
@@ -115,9 +112,9 @@ class MSDClient(fl.client.NumPyClient):
         # Set model parameters from a list of NumPy ndarrays
         self.model.train()
         if USE_FEDBN:
-            keys = [val.cpu().numpy() for name, val in self.model.state_dict().items() if "model.2" not in name]
+            keys = [val.cpu().numpy() for name, val in self.model.state_dict().items() if "adn.N" not in name and "model.2" not in name]
             params_dict = zip(keys, parameters)
-            state_dict = OrderedDict({k: torch.tensor(v) for k, v in params_dict})
+            state_dict = OrderedDict({k: torch.tensor(v) for k, v in params_dict}) # TODO: Error at this line
             self.model.load_state_dict(state_dict, strict=False)
         else:
             params_dict = zip(self.model.state_dict().keys(), parameters)
@@ -145,9 +142,9 @@ class MSDClient(fl.client.NumPyClient):
 def main() -> None:
     """Load data, start MSDClient."""
 
-    data_dir_liver = '/mnt/hdd1/Task07_Pancreas' # Local path to data. Should contain imagesTr and labelsTr subdirs
+    data_dir_pan = '/mnt/hdd1/Task07_Pancreas' # Local path to data. Should contain imagesTr and labelsTr subdirs
     # Load data
-    trainloader, testloader, num_examples = msd.load_data(data_dir_liver)
+    trainloader, testloader, num_examples = msd.load_data(data_dir_pan)
 
     # Load model
     model = UNet(**config['model_params']).to(DEVICE).train()

@@ -105,7 +105,7 @@ class MSDClient(fl.client.NumPyClient):
         self.model.train()
         if USE_FEDBN:
             # Return model parameters as a list of NumPy ndarrays, excluding parameters of BN layers when using FedBN
-            return [val.cpu().numpy() for name, val in self.model.state_dict().items() if "model.2" not in name]
+            return [val.cpu().numpy() for name, val in self.model.state_dict().items() if "adn.N" not in name and "model.2" not in name]
         else:
             # Return model parameters as a list of NumPy ndarrays
             return [val.cpu().numpy() for _, val in self.model.state_dict().items()]
@@ -114,10 +114,9 @@ class MSDClient(fl.client.NumPyClient):
         # Set model parameters from a list of NumPy ndarrays
         self.model.train()
         if USE_FEDBN:
-            keys = [val.cpu().numpy() for name, val in self.model.state_dict().items() if "model.2" not in name]
+            keys = [val.cpu().numpy() for name, val in self.model.state_dict().items() if "adn.N" not in name and "model.2" not in name]
             params_dict = zip(keys, parameters)
-            print(params_dict)
-            state_dict = OrderedDict({k: torch.tensor(v) for k, v in params_dict})
+            state_dict = OrderedDict({k: torch.tensor(v) for k, v in params_dict}) # TODO Error at this line
             self.model.load_state_dict(state_dict, strict=False)
         else:
             params_dict = zip(self.model.state_dict().keys(), parameters)
