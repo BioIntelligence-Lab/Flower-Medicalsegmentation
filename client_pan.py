@@ -106,11 +106,7 @@ class MSDClient(fl.client.NumPyClient):
         self.model.train()
         if USE_FEDBN:
             # Return model parameters as a list of NumPy ndarrays, excluding parameters of BN layers when using FedBN
-            return [
-                val.cpu().numpy()
-                for name, val in self.model.state_dict().items()
-                if "adn.N" and "model.2" not in name
-            ]
+            return [val.cpu().numpy() for name, val in self.model.state_dict().items() if "model.2" not in name]
         else:
             # Return model parameters as a list of NumPy ndarrays
             return [val.cpu().numpy() for _, val in self.model.state_dict().items()]
@@ -119,7 +115,7 @@ class MSDClient(fl.client.NumPyClient):
         # Set model parameters from a list of NumPy ndarrays
         self.model.train()
         if USE_FEDBN:
-            keys = [k for k in self.model.state_dict().keys() if "adn.N" and "model.2" not in k]
+            keys = [val.cpu().numpy() for name, val in self.model.state_dict().items() if "model.2" not in name]
             params_dict = zip(keys, parameters)
             state_dict = OrderedDict({k: torch.tensor(v) for k, v in params_dict})
             self.model.load_state_dict(state_dict, strict=False)
@@ -134,7 +130,7 @@ class MSDClient(fl.client.NumPyClient):
         # Set model parameters, train model, return updated model parameters
         self.set_parameters(parameters)
         msd.train(self.model, self.trainloader, max_epochs=2, device=DEVICE)
-        torch.save(self.model.state_dict(), os.path.join(root_dir, "best_metric_model_pan_128_segviz_flwr.pth"))
+        #torch.save(self.model.state_dict(), os.path.join(root_dir, "best_metric_model_pan_128_segviz_flwr.pth"))
         return self.get_parameters(config={}), self.num_examples["trainset"], {}
 
     def evaluate(
@@ -149,7 +145,7 @@ class MSDClient(fl.client.NumPyClient):
 def main() -> None:
     """Load data, start MSDClient."""
 
-    data_dir_liver = '/Task07_Pancreas'
+    data_dir_liver = '/mnt/hdd1/Task07_Pancreas' # Local path to data. Should contain imagesTr and labelsTr subdirs
     # Load data
     trainloader, testloader, num_examples = msd.load_data(data_dir_liver)
 

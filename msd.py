@@ -249,8 +249,8 @@ def main():
     print("Centralized PyTorch training")
     print("Load data")
     
-    trainloader_spleen, testloader_spleen, _ = load_data('/Task09_Spleen')
-    trainloader_pan, testloader_pan, _ = load_data('/Task07_Pancreas')    
+    trainloader_spleen, testloader_spleen, _ = load_data('/mnt/hdd1/Task09_Spleen')
+    trainloader_pan, testloader_pan, _ = load_data('/mnt/hdd1/Task07_Pancreas')    
     
     net_spleen = UNet(**config['model_params']).to(DEVICE)
     net_spleen.eval()
