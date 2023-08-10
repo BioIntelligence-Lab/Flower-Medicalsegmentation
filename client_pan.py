@@ -112,14 +112,14 @@ class MSDClient(fl.client.NumPyClient):
         # Set model parameters from a list of NumPy ndarrays
         self.model.train()
         if USE_FEDBN:
-            keys = [val.cpu().numpy() for name, val in self.model.state_dict().items() if "adn.N" not in name and "model.2" not in name]
+            keys = [name for name, val in self.model.state_dict().items() if "adn.N" not in name and "model.2" not in name]
             params_dict = zip(keys, parameters)
-            state_dict = OrderedDict({k: torch.tensor(v) for k, v in params_dict}) # TODO: Error at this line
+            state_dict = OrderedDict({k: torch.tensor(v) for k, v in params_dict})
             self.model.load_state_dict(state_dict, strict=False)
         else:
             params_dict = zip(self.model.state_dict().keys(), parameters)
             state_dict = OrderedDict({k: torch.tensor(v) for k, v in params_dict})
-            self.model.load_state_dict(state_dict, strict=True)
+            self.model.load_state_dict(state_dict, strict=False)
 
     def fit(
         self, parameters: List[np.ndarray], config: Dict[str, str]

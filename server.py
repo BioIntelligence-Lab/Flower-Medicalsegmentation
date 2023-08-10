@@ -22,7 +22,7 @@ if __name__ == "__main__":
             aggregated_loss, aggregated_metrics = super().aggregate_evaluate(server_round, results, failures)
 
             # Weigh accuracy of each client by number of examples used
-            accuracies = [r.metrics["accuracy"] * r.num_examples for _, r in results]
+            accuracies = [r.metrics["Dice"] * r.num_examples for _, r in results]
             examples = [r.num_examples for _, r in results]
 
             # Aggregate and print custom metric
@@ -30,7 +30,7 @@ if __name__ == "__main__":
             print(f"Round {server_round} accuracy aggregated from client results: {aggregated_accuracy}")
 
             # Return aggregated loss and metrics (i.e., aggregated accuracy)
-            return aggregated_loss, {"accuracy": aggregated_accuracy}
+            return aggregated_loss, {"Dice": aggregated_accuracy}
 
     # Create strategy and run server
     strategy = AggregateCustomMetricStrategy(
@@ -39,4 +39,5 @@ if __name__ == "__main__":
     fl.server.start_server(
         server_address="0.0.0.0:8080",
         config=fl.server.ServerConfig(num_rounds=500),
+        strategy=strategy,
     )
