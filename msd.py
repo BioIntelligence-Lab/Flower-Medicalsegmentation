@@ -249,14 +249,14 @@ def main():
     print("Centralized PyTorch training")
     print("Load data")
     
-    trainloader_spleen, testloader_spleen, _ = load_data('/Task09_Spleen')
-    trainloader_pan, testloader_pan, _ = load_data('/Task07_Pancreas')    
+    trainloader_spleen, testloader_spleen, _ = load_data('/mnt/hdd1/Task09_Spleen') # Change path to spleen data
+    trainloader_pan, testloader_pan, _ = load_data('/mnt/hdd1/Task07_Pancreas')    # Change path to pancreas data
     
     net_spleen = UNet(**config['model_params']).to(DEVICE)
     net_spleen.eval()
 
-    net_liver = UNet(**config['model_params']).to(DEVICE)
-    net_liver.eval()
+    net_pan = UNet(**config['model_params']).to(DEVICE)
+    net_pan.eval()
 
     print("Start training Spleen")
     train(model=net_spleen, train_loader=trainloader_spleen, max_epochs=100, device=DEVICE)
@@ -265,9 +265,9 @@ def main():
     print("Dice metric Spleen: ", dice_spleen)
 
     print("Start training Pancreas")
-    train(model=net_liver, train_loader=trainloader_pan, max_epochs=100, device=DEVICE)
+    train(model=net_pan, train_loader=trainloader_pan, max_epochs=100, device=DEVICE)
     print("Validate model Pancreas")
-    dice_liver = validate(model=net_liver, val_loader=testloader_pan, device=DEVICE)
+    dice_liver = validate(model=net_pan, val_loader=testloader_pan, device=DEVICE)
     print("Dice metric Liver: ", dice_liver)
 
 
