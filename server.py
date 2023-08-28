@@ -1,43 +1,61 @@
-"""Flower server example."""
-import flwr as fl
 from collections import OrderedDict
-from flwr.server.client_proxy import ClientProxy
-from flwr.common import EvaluateRes, FitRes, Scalar
 
-from typing import Dict, List, Tuple, Optional, Union
-if __name__ == "__main__":
-    class AggregateCustomMetricStrategy(fl.server.strategy.FedAvg):
-        def aggregate_evaluate(
-            self,
-            server_round: int,
-            results: List[Tuple[ClientProxy, EvaluateRes]],
-            failures: List[Union[Tuple[ClientProxy, FitRes], BaseException]],
-        ) -> Tuple[Optional[float], Dict[str, Scalar]]:
-            """Aggregate evaluation accuracy using weighted average."""
 
-            if not results:
-                return None, {}
+from omegaconf import DictConfig
 
-            # Call aggregate_evaluate from base class (FedAvg) to aggregate loss and metrics
-            aggregated_loss, aggregated_metrics = super().aggregate_evaluate(server_round, results, failures)
+import torch
 
-            # Weigh accuracy of each client by number of examples used
-            accuracies = [r.metrics["Dice"] * r.num_examples for _, r in results]
-            examples = [r.num_examples for _, r in results]
+from model import Net, test
 
-            # Aggregate and print custom metric
-            aggregated_accuracy = sum(accuracies) / sum(examples)
-            print(f"Round {server_round} accuracy aggregated from client results: {aggregated_accuracy}")
 
-            # Return aggregated loss and metrics (i.e., aggregated accuracy)
-            return aggregated_loss, {"Dice": aggregated_accuracy}
+def get_on_fit_config(config: DictConfig):
+    """Return function that prepares config to send to clients."""
 
-    # Create strategy and run server
-    strategy = AggregateCustomMetricStrategy(
-        # (same arguments as FedAvg here)
-)
-    fl.server.start_server(
-        server_address="0.0.0.0:8080",
-        config=fl.server.ServerConfig(num_rounds=500),
-        strategy=strategy,
-    )
+    def fit_config_fn(server_round: int):
+        # This function will be executed by the strategy in its
+        # `configure_fit()` method.
+
+        # Here we are returning the same config on each round but
+        # here you might use the `server_round` input argument to
+        # adapt over time these settings so clients. For example, you
+        # might want clients to use a different learning rate at later
+        # stages in the FL process (e.g. smaller lr after N rounds)
+
+        return {
+            "lr": config.lr,
+            "momentum": config.momentum,
+            "local_epochs": config.local_epochs,
+        }
+
+    return fit_config_fn
+
+
+def get_evaluate_fn(num_classes: int, testloader):
+    """Define function for global evaluation on the server."""
+
+    def evaluate_fn(server_round: int, parameters, config):
+        # This function is called by the strategy's `evaluate()` method
+        # and receives as input arguments the current round number and the
+        # parameters of the global model.
+        # this function takes these parameters and evaluates the global model
+        # on a evaluation / test dataset.
+
+        model = Net(num_classes)
+
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+        params_dict = zip(model.state_dict().keys(), parameters)
+        state_dict = OrderedDict({k: torch.Tensor(v) for k, v in params_dict})
+        model.load_state_dict(state_dict, strict=True)
+
+        # Here we evaluate the global model on the test set. Recall that in more
+        # realistic settings you'd only do this at the end of your FL experiment
+        # you can use the `server_round` input argument to determine if this is the
+        # last round. If it's not, then preferably use a global validation set.
+        loss, accuracy = test(model, testloader, device)
+
+        # Report the loss and any other metric (inside a dictionary). In this case
+        # we report the global test accuracy.
+        return loss, {"accuracy": accuracy}
+
+    return evaluate_fn
