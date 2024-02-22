@@ -70,7 +70,7 @@ config = {
                   norm=Norm.BATCH,),
 }
 
-def load_data(data_dir):
+def load_data(data_dir, a_min, a_max):
     """Loads the MSD dataset
     """
 
@@ -89,7 +89,7 @@ def load_data(data_dir):
         LoadImaged(keys=["image", "label"]),
         EnsureChannelFirstd(keys=["image", "label"]),
         ScaleIntensityRanged(
-            keys=["image"], a_min=-57, a_max=164,
+            keys=["image"], a_min=a_min, a_max=a_max,
             b_min=0.0, b_max=1.0, clip=True,
         ),
         Resized(keys=["image"], spatial_size=(256,256,128)),   
@@ -108,21 +108,13 @@ def load_data(data_dir):
             image_key="image",
             image_threshold=0,
         ),
-        # user can also add other random transforms
-        # RandAffined(
-        #     keys=['image', 'label'],
-        #     mode=('bilinear', 'nearest'),
-        #     prob=1.0, spatial_size=(96, 96, 96),
-        #     rotate_range=(0, 0, np.pi/15),
-        #     scale_range=(0.1, 0.1, 0.1)),
-    ]
     )
     val_transform = Compose(
         [
             LoadImaged(keys=["image", "label"]),
             EnsureChannelFirstd(keys=["image", "label"]),
             ScaleIntensityRanged(
-                keys=["image"], a_min=-57, a_max=164,
+                keys=["image"], a_min=a_min, a_max=a_max,
                 b_min=0.0, b_max=1.0, clip=True,
             ),
             CropForegroundd(keys=["image", "label"], source_key="image"),

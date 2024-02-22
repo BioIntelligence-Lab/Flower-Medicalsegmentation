@@ -148,7 +148,7 @@ def main() -> None:
 
     data_dir_spleen = '/mnt/hdd1/Task09_Spleen' # Local path to data. Should contain imagesTr and labelsTr subdirs
     # Load data
-    trainloader, testloader, num_examples = msd.load_data(data_dir_spleen)
+    trainloader, testloader, num_examples = msd.load_data(data_dir_spleen, -57, 164)
 
     # Load model
     model = UNet(**config['model_params']).to(DEVICE).train()

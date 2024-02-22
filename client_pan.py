@@ -144,7 +144,7 @@ def main() -> None:
 
     data_dir_pan = '/mnt/hdd1/Task07_Pancreas' # Local path to data. Should contain imagesTr and labelsTr subdirs
     # Load data
-    trainloader, testloader, num_examples = msd.load_data(data_dir_pan)
+    trainloader, testloader, num_examples = msd.load_data(data_dir_pan, -87, 199)
 
     # Load model
     model = UNet(**config['model_params']).to(DEVICE).train()
