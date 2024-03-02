@@ -1,3 +1,4 @@
+import argparse
 from monai.utils import first, set_determinism
 from monai.transforms import (
     AsDiscrete,
@@ -55,6 +56,15 @@ USE_FEDBN: bool = True
 
 # pylint: disable=no-member
 DEVICE: str = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+parser = argparse.ArgumentParser(description="Flower Spleen Client for Medical Segmentation Decathlon")
+parser.add_argument(
+    "--spleen-path",
+    required=True,
+    type=str,
+    help="Path to the Spleen dataset (e.g. datasets/Task09_Spleen). Download from medicaldecathlon.com.",
+)
+
 # pylint: enable=no-member
 config = {
     # data
@@ -146,7 +156,8 @@ class MSDClient(fl.client.NumPyClient):
 def main() -> None:
     """Load data, start MSDClient."""
 
-    data_dir_spleen = '/mnt/hdd1/Task09_Spleen' # Local path to data. Should contain imagesTr and labelsTr subdirs
+    args = parser.parse_args()
+    data_dir_spleen = args.spleen_path  # Local path to data. Should contain imagesTr and labelsTr subdirs
     # Load data
     trainloader, testloader, num_examples = msd.load_data(data_dir_spleen, -57, 164)
 

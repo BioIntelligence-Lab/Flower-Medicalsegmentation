@@ -1,6 +1,8 @@
 """Flower code for FedBN on MSD
 """
 
+import argparse
+
 from monai.utils import first, set_determinism
 from monai.transforms import (
     AsDiscrete,
@@ -41,6 +43,21 @@ import numpy as np
 # import wandb
 import copy
 import nibabel as nib
+
+
+parser = argparse.ArgumentParser(description="Flower Server for Medical Segmentation Decathlon")
+parser.add_argument(
+    "--spleen-path",
+    required=True,
+    type=str,
+    help="Path to the Spleen dataset (e.g. datasets/Task09_Spleendown). Download from medicaldecathlon.com.",
+)
+parser.add_argument(
+    "--pancreas-path",
+    required=True,
+    type=str,
+    help="Path to the Pancreas dataset (e.g. datasets/Task07_Pancreas). Download from medicaldecathlon.com.",
+)
 
 config = {
     # data
@@ -108,6 +125,7 @@ def load_data(data_dir, a_min, a_max):
             image_key="image",
             image_threshold=0,
         ),
+    ]
     )
     val_transform = Compose(
         [
@@ -236,14 +254,15 @@ def validate( model: UNet(**config['model_params']),
         return metric
     
 def main():
+    args = parser.parse_args()
+
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
     print("Centralized PyTorch training")
     print("Load data")
     
-    trainloader_spleen, testloader_spleen, _ = load_data('/mnt/hdd1/Task09_Spleen') # Change path to spleen data
-    trainloader_pan, testloader_pan, _ = load_data('/mnt/hdd1/Task07_Pancreas')    # Change path to pancreas data
-    
+    trainloader_spleen, testloader_spleen, _ = load_data(args.spleen_path, -57, 164) # TODO: a_min/max copied from client_spleen
+    trainloader_pan, testloader_pan, _ = load_data(args.pancreas_path, -87, 199) # TODO: a_min/max copied from client_pancreas
     net_spleen = UNet(**config['model_params']).to(DEVICE)
     net_spleen.eval()
 
