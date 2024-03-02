@@ -92,6 +92,7 @@ def get_evaluate_fn(server_dataset):
 
         log(INFO,"Evaluating global model on a dataset held by the server")
         log(INFO," --------------------------- WARNING ----------------------")
+        log(INFO, "\t\t Global Model evaluation is not implemented")
         sleep(10)
         log(INFO," --------------------------- MUST IMPLEMENT ---------------")
 
