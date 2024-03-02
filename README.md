@@ -1,6 +1,6 @@
 # Flower for 3D medical image segmentation 
 
-This repository is maintained to develop and test the Flower framework for 3D medical image segmentation using the data from the Medical Segmentation Decathalon challenge.
+This repository is maintained to develop and test the [Flower framework](https://flower.ai/) for 3D medical image segmentation using the data from the Medical Segmentation Decathalon challenge.
 
 This code is inspired by the official [Flower FedBN tutorial](https://flower.dev/docs/fedbn-example-pytorch-from-centralized-to-federated.html) 
 
@@ -11,7 +11,7 @@ This code is inspired by the official [Flower FedBN tutorial](https://flower.dev
 conda create -n um2ii-flower python=3.10 -y
 
 # Activate the environment
-conda activate um2ii-flower
+conda activate um2ii-flower # or source activate um2ii-flower
 
 # Install requirements
 pip install -r requirements.txt
@@ -64,12 +64,12 @@ python3 server.py
 
 ```bash
 # Start the Flower Liver client using 
-python3 client_spleen.py  --spleen-path <path/to/spleen/dataset> 
+python3 client_spleen.py  --spleen-path=dataset/Task09_Spleen # or update the path if you didn't follow steps above
 ```
 
 ```bash
 # Start the Flower Pancreas client using 
-python3 client_pan.py --pancreas-path <path/to/spleen/dataset>
+python3 client_pan.py --pancreas-path=dataset/Task07_Pancreas # or update the path if you didn't follow steps above
 ```
 
 
