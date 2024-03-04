@@ -1,3 +1,4 @@
+import argparse
 from monai.utils import first, set_determinism
 from monai.transforms import (
     AsDiscrete,
@@ -53,6 +54,15 @@ USE_FEDBN: bool = True
 
 # pylint: disable=no-member
 DEVICE: str = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+parser = argparse.ArgumentParser(description="Flower Pancrease Client for Medical Segmentation Decathlon")
+parser.add_argument(
+    "--pancreas-path",
+    required=True,
+    type=str,
+    help="Path to the Pancreas dataset (e.g. datasets/Task07_Pancreas). Download from medicaldecathlon.com.",
+)
+
 # pylint: enable=no-member
 config = {
     # data
@@ -142,7 +152,8 @@ class MSDClient(fl.client.NumPyClient):
 def main() -> None:
     """Load data, start MSDClient."""
 
-    data_dir_pan = '/mnt/hdd1/Task07_Pancreas' # Local path to data. Should contain imagesTr and labelsTr subdirs
+    args = parser.parse_args()
+    data_dir_pan = args.pancreas_path # Local path to data. Should contain imagesTr and labelsTr subdirs
     # Load data
     trainloader, testloader, num_examples = msd.load_data(data_dir_pan, -87, 199)
 
