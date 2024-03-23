@@ -1,50 +1,13 @@
 import argparse
-from monai.utils import first, set_determinism
-from monai.transforms import (
-    AsDiscrete,
-    AsDiscreted,
-    EnsureChannelFirstd,
-    Compose,
-    CropForegroundd,
-    LoadImaged,
-    Orientationd,
-    RandCropByPosNegLabeld,
-    SaveImaged,
-    RandAffined,
-    ScaleIntensityRanged,
-    Spacingd,
-    Invertd,
-    Resized,
-)
-from monai.handlers.utils import from_engine
-from monai.networks.nets import UNet, BasicUNet
+from pathlib import Path
+from datetime import datetime
+from monai.utils import first
+from monai.networks.nets import UNet
 from monai.networks.layers import Norm
-from torch.optim.lr_scheduler import CosineAnnealingLR
-
-from monai.metrics import DiceMetric, ROCAUCMetric, MSEMetric
-from monai.networks.utils import copy_model_state
-from monai.optimizers import generate_param_groups
-from monai.losses import DiceLoss
-from monai.inferers import sliding_window_inference
-from monai.data import CacheDataset, DataLoader, Dataset, decollate_batch
-from monai.config import print_config
-from monai.apps import download_and_extract
 import torch
-import matplotlib.pyplot as plt
-import tempfile
-import shutil
-import os
-import glob
 import numpy as np
-import wandb
-import copy
-import nibabel as nib
 
 import msd
-
-import os
-import sys
-import timeit
 from collections import OrderedDict
 from typing import Dict, List, Tuple
 
@@ -61,6 +24,12 @@ parser.add_argument(
     required=True,
     type=str,
     help="Path to the Pancreas dataset (e.g. datasets/Task07_Pancreas). Download from medicaldecathlon.com.",
+)
+parser.add_argument(
+    "--save-path",
+    required=True,
+    type=str,
+    help="Path where this client will save local models (if doesn't exist, directory will be created)",
 )
 
 # pylint: enable=no-member
@@ -103,11 +72,17 @@ class MSDClient(fl.client.NumPyClient):
         trainloader: torch.utils.data.DataLoader,
         testloader: torch.utils.data.DataLoader,
         num_examples: Dict,
+        save_path: str,
     ) -> None:
         self.model = model
         self.trainloader = trainloader
         self.testloader = testloader
         self.num_examples = num_examples
+
+        # prepare directory where models will be saved
+        self.path = Path(save_path)/datetime.now().strftime('%d-%m-%Y/%H-%M-%S')
+        self.path.mkdir(parents=True, exist_ok=True)
+        print(f"Client will save to: {str(self.path)}")
 
     def get_parameters(self, config: Dict[str, str]) -> List[np.ndarray]:
         self.model.train()
@@ -134,6 +109,11 @@ class MSDClient(fl.client.NumPyClient):
     def fit(
         self, parameters: List[np.ndarray], config: Dict[str, str]
     ) -> Tuple[List[np.ndarray], int, Dict]:
+        if config['save_model']:
+            print("SAVE MODEL!! -- must implement")
+
+            #TODO: save model into self.path
+
         # Set model parameters, train model, return updated model parameters
         self.set_parameters(parameters)
         msd.train(self.model, self.trainloader, max_epochs=2, device=DEVICE)
@@ -164,7 +144,8 @@ def main() -> None:
     _ = model(first(trainloader)["image"].to(DEVICE))
 
     # Start client
-    client = MSDClient(model, trainloader, testloader, num_examples)
+    client = MSDClient(model, trainloader, testloader,
+                       num_examples, save_path=args.save_path).to_client()
     fl.client.start_numpy_client(server_address="127.0.0.1:8080", client=client)
 
 

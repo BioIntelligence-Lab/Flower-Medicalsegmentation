@@ -63,13 +63,16 @@ python3 server.py
 ```
 
 ```bash
-# Start the Flower Liver client using 
-python3 client_spleen.py  --spleen-path=dataset/Task09_Spleen # or update the path if you didn't follow steps above
+# Start the Flower Liver client using
+# Specify where dataset is located and where to save local models
+python3 client_spleen.py  --spleen-path=dataset/Task09_Spleen --save-path output-spleen
 ```
 
 ```bash
-# Start the Flower Pancreas client using 
-python3 client_pan.py --pancreas-path=dataset/Task07_Pancreas # or update the path if you didn't follow steps above
+# Start the Flower Pancreas client using
+# Specify where dataset is located and where to save local models
+python3 client_pan.py --pancreas-path=dataset/Task07_Pancreas --save-path output-pancreas
 ```
 
+When client save a model, they will follwow the directory structure: `save-path/date/time/<model>`
 

@@ -6,7 +6,7 @@ from pathlib import Path
 from collections import OrderedDict
 
 import flwr as fl
-from flwr.common import log
+from flwr.common import FitIns, log
 from flwr.server.client_manager import ClientManager
 from flwr.server.client_proxy import ClientProxy
 from flwr.common import EvaluateIns, EvaluateRes, FitRes, Parameters, Scalar, parameters_to_ndarrays
@@ -15,11 +15,15 @@ from typing import Dict, List, Tuple, Optional, Union
 
 class AggregateCustomMetricStrategy(fl.server.strategy.FedAvg):
 
-    def __init__(self, save_global_path: str, *args, **kwargs):
+    def __init__(self, save_global_path: str, total_rounds: int, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.best_dice_so_far = - float("inf")
         self.save_global_path = Path(save_global_path)
+        self.total_rounds = total_rounds
+        # will be set to true if a new best dice is found
+        # and when commencing the last round
+        self.signal_clients_to_save_model = False
 
         # Create path if it doesn't exist
         self.save_global_path.mkdir(exist_ok=True, parents=True)
@@ -37,6 +41,22 @@ class AggregateCustomMetricStrategy(fl.server.strategy.FedAvg):
             pickle.dump(to_save, h, protocol=pickle.HIGHEST_PROTOCOL)
         
         log(INFO, f"Saved new model into: {filename}")
+
+    def configure_fit(self, server_round: int, parameters: Parameters, client_manager: ClientManager) -> List[Tuple[ClientProxy | FitIns]]:
+        configure_fit =  super().configure_fit(server_round, parameters, client_manager)
+
+        # here we simply insert an element in the config dictionary
+        # to signal whether the client receiving the instrcutions should
+        # save the model or not (all clients receive the same instructions)
+        # if it's the last round, force to save
+        if server_round == self.total_rounds:
+            self.signal_clients_to_save_model = True
+            print("Last round, ensuring all clients save model.")
+        for _, fitins in configure_fit:
+            fitins.config['save_model'] = self.signal_clients_to_save_model
+
+        self.signal_clients_to_save_model = False
+        return configure_fit
 
     def configure_evaluate(self, server_round: int, parameters: Parameters, client_manager: ClientManager):
         # Configure as usual
@@ -74,6 +94,8 @@ class AggregateCustomMetricStrategy(fl.server.strategy.FedAvg):
             log(INFO, f"New best average dice achieved (round {server_round})")
             self.save_model(server_round, aggregated_accuracy)
             self.best_dice_so_far = aggregated_accuracy
+            # signal that clients must save model before training in a new round
+            self.signal_clients_to_save_model = True
 
         # Return aggregated loss and metrics (i.e., aggregated accuracy)
         return aggregated_loss, {"Dice": aggregated_accuracy}
@@ -88,7 +110,7 @@ def get_evaluate_fn(server_dataset):
     def evaluate(
         server_round: int, parameters: fl.common.NDArrays, config: Dict[str, Scalar]
     ):
-        """Use the entire CIFAR-10 test set for evaluation."""
+        """Use the a test set for centralized evaluation."""
 
         log(INFO,"Evaluating global model on a dataset held by the server")
         log(INFO," --------------------------- WARNING ----------------------")
@@ -114,14 +136,17 @@ def main():
     log(INFO, "PLEASE LOAD YOUR SERVER-SIDE dataset")
     server_dataset = None # load dataset/dataloader
 
+    rounds = 500
+
     # Create strategy and run server
     strategy = AggregateCustomMetricStrategy(
+        total_rounds=rounds,
         save_global_path='global_models',
         evaluate_fn=get_evaluate_fn(server_dataset)) # pass your dataset here
     
     fl.server.start_server(
         server_address="0.0.0.0:8080",
-        config=fl.server.ServerConfig(num_rounds=500),
+        config=fl.server.ServerConfig(num_rounds=rounds),
         strategy=strategy,
     )
 
