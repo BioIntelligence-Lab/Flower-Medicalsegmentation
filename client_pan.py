@@ -113,6 +113,7 @@ class MSDClient(fl.client.NumPyClient):
             print("SAVE MODEL!! -- must implement")
 
             #TODO: save model into self.path
+            torch.save(self.model.state_dict(), str(self.path / f"pan_local_model_round_{config['current_round']}.pth"))
 
         # Set model parameters, train model, return updated model parameters
         self.set_parameters(parameters)
