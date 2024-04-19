@@ -4,6 +4,8 @@ from logging import INFO
 import pickle
 from pathlib import Path
 from collections import OrderedDict
+from flwr.server import ServerApp, ServerConfig
+from workflow_with_log import SecAggPlusWorkflowWithLogs
 
 import flwr as fl
 from flwr.common import FitIns, log
@@ -131,25 +133,42 @@ def get_evaluate_fn(server_dataset):
 
     return evaluate
 
-def main():
+rounds = 500
+server_dataset = None # load dataset/dataloader
+config = ServerConfig(num_rounds=rounds)
 
-    log(INFO, "PLEASE LOAD YOUR SERVER-SIDE dataset")
-    server_dataset = None # load dataset/dataloader
+# Create strategy and run server
+strategy = AggregateCustomMetricStrategy(
+    total_rounds=rounds,
+    save_global_path='global_models',
+    evaluate_fn=get_evaluate_fn(server_dataset)) # pass your dataset here
 
-    rounds = 500
+# Flower ServerApp
+app = ServerApp(
+    config=config,
+    strategy=strategy,
+)
 
-    # Create strategy and run server
-    strategy = AggregateCustomMetricStrategy(
-        total_rounds=rounds,
-        save_global_path='global_models',
-        evaluate_fn=get_evaluate_fn(server_dataset)) # pass your dataset here
+# Legacy code
+# def main():
+
+#     log(INFO, "PLEASE LOAD YOUR SERVER-SIDE dataset")
+#     server_dataset = None # load dataset/dataloader
+
+#     rounds = 500
+
+#     # Create strategy and run server
+#     strategy = AggregateCustomMetricStrategy(
+#         total_rounds=rounds,
+#         save_global_path='global_models',
+#         evaluate_fn=get_evaluate_fn(server_dataset)) # pass your dataset here
     
-    fl.server.start_server(
-        server_address="0.0.0.0:8080",
-        config=fl.server.ServerConfig(num_rounds=rounds),
-        strategy=strategy,
-    )
+#     fl.server.start_server(
+#         server_address="0.0.0.0:8080",
+#         config=fl.server.ServerConfig(num_rounds=rounds),
+#         strategy=strategy,
+#     )
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

@@ -6,6 +6,8 @@ from monai.networks.nets import UNet
 from monai.networks.layers import Norm
 import torch
 import numpy as np
+from flwr.client import NumPyClient, ClientApp
+from flwr.client.mod import secaggplus_mod
 
 import msd
 from collections import OrderedDict
@@ -129,10 +131,9 @@ class MSDClient(fl.client.NumPyClient):
         accuracy = msd.validate(self.model, self.testloader, device=DEVICE)
         return float(accuracy), self.num_examples["valset"], {"Dice": float(accuracy)}
 
-
-def main() -> None:
-    """Load data, start MSDClient."""
-
+# Flower Next API
+def client_fn(cid: str):
+    """Create and return an instance of Flower `Client`."""
     args = parser.parse_args()
     data_dir_pan = args.pancreas_path # Local path to data. Should contain imagesTr and labelsTr subdirs
     # Load data
@@ -143,12 +144,39 @@ def main() -> None:
 
     # Perform a single forward pass to properly initialize BatchNorm
     _ = model(first(trainloader)["image"].to(DEVICE))
-
-    # Start client
-    client = MSDClient(model, trainloader, testloader,
+    return MSDClient(model, trainloader, testloader,
                        num_examples, save_path=args.save_path).to_client()
-    fl.client.start_numpy_client(server_address="127.0.0.1:8080", client=client)
 
 
-if __name__ == "__main__":
-    main()
+# Flower ClientApp
+app = ClientApp(
+    client_fn=client_fn,
+    mods=[
+        secaggplus_mod,
+    ],
+)
+
+# Legacy code
+# def main() -> None:
+#     """Load data, start MSDClient."""
+
+#     args = parser.parse_args()
+#     data_dir_pan = args.pancreas_path # Local path to data. Should contain imagesTr and labelsTr subdirs
+#     # Load data
+#     trainloader, testloader, num_examples = msd.load_data(data_dir_pan, -87, 199)
+
+#     # Load model
+#     model = UNet(**config['model_params']).to(DEVICE).train()
+
+#     # Perform a single forward pass to properly initialize BatchNorm
+#     _ = model(first(trainloader)["image"].to(DEVICE))
+
+#     # Start client
+#     client = MSDClient(model, trainloader, testloader,
+#                        num_examples, save_path=args.save_path).to_client()
+#     # Legacy code
+#     fl.client.start_numpy_client(server_address="127.0.0.1:8080", client=client)
+
+
+# if __name__ == "__main__":
+#     main()
