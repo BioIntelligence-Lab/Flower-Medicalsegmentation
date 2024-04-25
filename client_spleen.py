@@ -6,8 +6,7 @@ from monai.networks.nets import UNet
 from monai.networks.layers import Norm
 import torch
 import numpy as np
-from flwr.client import NumPyClient, ClientApp
-from flwr.client.mod import secaggplus_mod
+from flwr.client import ClientApp
 
 import msd
 
@@ -22,20 +21,9 @@ USE_FEDBN: bool = True
 
 # pylint: disable=no-member
 DEVICE: str = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+SPLEEN_PATH = "dataset/Task09_Spleen" # used in Flower Next mode
+SAVE_PATH = "output-spleen" # used in Flower Next mode
 
-parser = argparse.ArgumentParser(description="Flower Spleen Client for Medical Segmentation Decathlon")
-parser.add_argument(
-    "--spleen-path",
-    required=True,
-    type=str,
-    help="Path to the Spleen dataset (e.g. datasets/Task09_Spleen). Download from medicaldecathlon.com.",
-)
-parser.add_argument(
-    "--save-path",
-    required=True,
-    type=str,
-    help="Path where this client will save local models (if doesn't exist, directory will be created)",
-)
 
 # pylint: enable=no-member
 config = {
@@ -139,10 +127,9 @@ class MSDClient(fl.client.NumPyClient):
 # Flower Next API
 def client_fn(cid: str):
     """Create and return an instance of Flower `Client`."""
-    args = parser.parse_args()
-    data_dir_pan = args.pancreas_path # Local path to data. Should contain imagesTr and labelsTr subdirs
+    data_dir_spleen = SPLEEN_PATH # Local path to data. Should contain imagesTr and labelsTr subdirs
     # Load data
-    trainloader, testloader, num_examples = msd.load_data(data_dir_pan, -57, 164)
+    trainloader, testloader, num_examples = msd.load_data(data_dir_spleen, -57, 164)
 
     # Load model
     model = UNet(**config['model_params']).to(DEVICE).train()
@@ -150,38 +137,51 @@ def client_fn(cid: str):
     # Perform a single forward pass to properly initialize BatchNorm
     _ = model(first(trainloader)["image"].to(DEVICE))
     return MSDClient(model, trainloader, testloader,
-                       num_examples, save_path=args.save_path).to_client()
+                       num_examples, save_path=SAVE_PATH).to_client()
 
 # Flower ClientApp
+# Launch via `flower-client-app client_spleen:app`
 app = ClientApp(
     client_fn=client_fn,
-    mods=[
-        secaggplus_mod,
-    ],
 )
 
 # Legacy code
-# def main() -> None:
-#     """Load data, start MSDClient."""
+# Launch via `python client_spleen.py --pancreas-path=<...> --save-path=<...>`
+def main() -> None:
+    """Load data, start MSDClient."""
 
-#     args = parser.parse_args()
-#     data_dir_spleen = args.spleen_path  # Local path to data. Should contain imagesTr and labelsTr subdirs
-#     # Load data
-#     trainloader, testloader, num_examples = msd.load_data(data_dir_spleen, -57, 164)
+    parser = argparse.ArgumentParser(description="Flower Spleen Client for Medical Segmentation Decathlon")
+    parser.add_argument(
+        "--spleen-path",
+        required=True,
+        type=str,
+        help="Path to the Spleen dataset (e.g. datasets/Task09_Spleen). Download from medicaldecathlon.com.",
+    )
+    parser.add_argument(
+        "--save-path",
+        required=True,
+        type=str,
+        help="Path where this client will save local models (if doesn't exist, directory will be created)",
+    )
 
-#     # Load model
-#     model = UNet(**config['model_params']).to(DEVICE).train()
+    args = parser.parse_args()
+    data_dir_spleen = args.spleen_path  # Local path to data. Should contain imagesTr and labelsTr subdirs
+    # Load data
+    trainloader, testloader, num_examples = msd.load_data(data_dir_spleen, -57, 164)
 
-#     # Perform a single forward pass to properly initialize BatchNorm
-#     _ = model(first(trainloader)["image"].to(DEVICE))
+    # Load model
+    model = UNet(**config['model_params']).to(DEVICE).train()
 
-
-#     # Start client
-#     client = MSDClient(model, trainloader, testloader,
-#                        num_examples, save_path=args.save_path).to_client()
-#     # # Legacy code
-#     # fl.client.start_numpy_client(server_address="127.0.0.1:8080", client=client)
+    # Perform a single forward pass to properly initialize BatchNorm
+    _ = model(first(trainloader)["image"].to(DEVICE))
 
 
-# if __name__ == "__main__":
-#     main()
+    # Start client
+    client = MSDClient(model, trainloader, testloader,
+                       num_examples, save_path=args.save_path).to_client()
+    # # Legacy code
+    fl.client.start_client(server_address="127.0.0.1:8080", client=client)
+
+
+if __name__ == "__main__":
+    main()

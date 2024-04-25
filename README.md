@@ -76,3 +76,31 @@ python3 client_pan.py --pancreas-path=dataset/Task07_Pancreas --save-path output
 
 When client save a model, they will follwow the directory structure: `save-path/date/time/<model>`
 
+## Run the experiment (Federated with `Flower Next`)
+
+Flower Next integrates a collection of new featuers that will be gradually incorporated in the usual `flwr` package. But you can start takinga advantage of them by running your experiments making use of `ClientApp` and `ServerApp`. You can find a guide on how to upgrade to Flower Next style in the [Flower Documentation](https://flower.ai/docs/framework/how-to-upgrade-to-flower-next.html). For the purpose of this project:
+
+You'll need to run first the `SuperLink`, to which you can pass certificates if you whish. Check the documentation for that. The lines below show how to do this w/o certificates.
+
+```bash
+# start the superlink
+flower-superlink --insecure
+```
+
+Next, you'll need your `SuperNode` (i.e. nodes containing the data that will eventually do training) to the `SuperLink`. Repeat the below for as many nodes as you have, each pointing to their local data. 
+
+```bash
+# launches supernode wich will execute the the `ClientApp` in `client_spleen.py`
+flower-client-app client_spleen:app --insecure
+
+# launch supernode pointing to a `ClientApp` making use of the pancreas data
+flower-client-app client_pan:app --insecure
+```
+
+With the above done, you'll see nothing seems to happen. The `SuperNodes` periodically ping the `SuperLink` for messages that the `ServerApp` (which we haven't launched yet) is sending them. Without further due, let's launch the `ServerApp` to start the federation:
+
+```bash
+flower-server-app server:app --insecure
+```
+
+You'll notice once the N rounds finish, the `SuperLink` and `SuperNode` remain idle. You can launch another `ServerApp` to start a new experiment (yes, without having to restart the `SuperNode` or `SuperLink`)
