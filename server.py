@@ -3,15 +3,13 @@ from time import sleep
 from logging import INFO
 import pickle
 from pathlib import Path
-from collections import OrderedDict
 from flwr.server import ServerApp, ServerConfig
-from workflow_with_log import SecAggPlusWorkflowWithLogs
 
 import flwr as fl
 from flwr.common import FitIns, log
 from flwr.server.client_manager import ClientManager
 from flwr.server.client_proxy import ClientProxy
-from flwr.common import EvaluateIns, EvaluateRes, FitRes, Parameters, Scalar, parameters_to_ndarrays
+from flwr.common import EvaluateRes, FitRes, Parameters, Scalar, parameters_to_ndarrays
 
 from typing import Dict, List, Tuple, Optional, Union
 
@@ -101,7 +99,11 @@ class AggregateCustomMetricStrategy(fl.server.strategy.FedAvg):
 
         # Return aggregated loss and metrics (i.e., aggregated accuracy)
         return aggregated_loss, {"Dice": aggregated_accuracy}
-    
+
+def get_on_fit_config_fn():
+    def on_fit_config(server_round: int):
+        return {"current_round": server_round}
+    return on_fit_config
 
 def get_evaluate_fn(server_dataset):
     """This function returns a function that will be executed by the 
@@ -141,34 +143,37 @@ config = ServerConfig(num_rounds=rounds)
 strategy = AggregateCustomMetricStrategy(
     total_rounds=rounds,
     save_global_path='global_models',
+    on_fit_config_fn=get_on_fit_config_fn(),
     evaluate_fn=get_evaluate_fn(server_dataset)) # pass your dataset here
 
 # Flower ServerApp
+# Launch via `flower-server-app server:app`
 app = ServerApp(
     config=config,
     strategy=strategy,
 )
 
 # Legacy code
-# def main():
+# Launch via `python server.py`
+def main():
 
-#     log(INFO, "PLEASE LOAD YOUR SERVER-SIDE dataset")
-#     server_dataset = None # load dataset/dataloader
+    log(INFO, "PLEASE LOAD YOUR SERVER-SIDE dataset")
+    server_dataset = None # load dataset/dataloader
 
-#     rounds = 500
+    rounds = 500
 
-#     # Create strategy and run server
-#     strategy = AggregateCustomMetricStrategy(
-#         total_rounds=rounds,
-#         save_global_path='global_models',
-#         evaluate_fn=get_evaluate_fn(server_dataset)) # pass your dataset here
+    # Create strategy and run server
+    strategy = AggregateCustomMetricStrategy(
+        total_rounds=rounds,
+        save_global_path='global_models',
+        evaluate_fn=get_evaluate_fn(server_dataset)) # pass your dataset here
     
-#     fl.server.start_server(
-#         server_address="0.0.0.0:8080",
-#         config=fl.server.ServerConfig(num_rounds=rounds),
-#         strategy=strategy,
-#     )
+    fl.server.start_server(
+        server_address="0.0.0.0:8080",
+        config=config,
+        strategy=strategy,
+    )
 
 
-# if __name__ == "__main__":
-#     main()
+if __name__ == "__main__":
+    main()
