@@ -106,7 +106,7 @@ class MSDClient(fl.client.NumPyClient):
 
         # Set model parameters, train model, return updated model parameters
         self.set_parameters(parameters)
-        msd.train(self.model, self.trainloader, max_epochs=2, device=DEVICE)
+        msd.train(self.model, self.trainloader, max_epochs=10, device=DEVICE)
         #torch.save(self.model.state_dict(), os.path.join(root_dir, "best_metric_model_pan_128_segviz_flwr.pth"))
         return self.get_parameters(config={}), self.num_examples["trainset"], {}
 
@@ -122,8 +122,6 @@ class MSDClient(fl.client.NumPyClient):
 def client_fn(cid: str):
     """Create and return an instance of Flower `Client`."""
     data_dir_pan = PANCREAS_PATH # Local path to data. Should contain imagesTr and labelsTr subdirs
-    # Load data
-    trainloader, testloader, num_examples = msd.load_data(data_dir_pan, -87, 199)
 
     # Load model
     model = UNet(**config['model_params']).to(DEVICE).train()
@@ -135,47 +133,9 @@ def client_fn(cid: str):
 
 
 # Flower ClientApp
+# Load data
+trainloader, testloader, num_examples = msd.load_data(data_dir_pan, -87, 199)
 # Launch via `flower-client-app client_pan:app`
 app = ClientApp(
     client_fn=client_fn,
 )
-
-# Legacy code
-# Launch via `python client_pan.py --pancreas-path=<...> --save-path=<...>`
-def main() -> None:
-    """Load data, start MSDClient."""
-
-    parser = argparse.ArgumentParser(description="Flower Pancrease Client for Medical Segmentation Decathlon")
-    parser.add_argument(
-        "--pancreas-path",
-        required=True,
-        type=str,
-        help="Path to the Pancreas dataset (e.g. datasets/Task07_Pancreas). Download from medicaldecathlon.com.",
-    )
-    parser.add_argument(
-        "--save-path",
-        required=True,
-        type=str,
-        help="Path where this client will save local models (if doesn't exist, directory will be created)",
-    )
-
-    args = parser.parse_args()
-    data_dir_pan = args.pancreas_path # Local path to data. Should contain imagesTr and labelsTr subdirs
-    # Load data
-    trainloader, testloader, num_examples = msd.load_data(data_dir_pan, -87, 199)
-
-    # Load model
-    model = UNet(**config['model_params']).to(DEVICE).train()
-
-    # Perform a single forward pass to properly initialize BatchNorm
-    _ = model(first(trainloader)["image"].to(DEVICE))
-
-    # Start client
-    client = MSDClient(model, trainloader, testloader,
-                       num_examples, save_path=args.save_path).to_client()
-    # Legacy code
-    fl.client.start_client(server_address="127.0.0.1:8080", client=client)
-
-
-if __name__ == "__main__":
-    main()
