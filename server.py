@@ -4,7 +4,7 @@ from logging import INFO
 import pickle
 from pathlib import Path
 from flwr.server import ServerApp, ServerConfig
-
+import torch
 import flwr as fl
 from flwr.common import FitIns, log
 from flwr.server.client_manager import ClientManager
@@ -32,13 +32,12 @@ class AggregateCustomMetricStrategy(fl.server.strategy.FedAvg):
         """Save global parameters to disk as list of NumPy arrays."""
 
         ndarrays = parameters_to_ndarrays(self.global_model)
-        filename = self.save_global_path/f"global_model_round_{server_round}.pkl"
+        state_dict = {f"param_{i}": torch.tensor(ndarray) for i, ndarray in enumerate(ndarrays)}
+        # Ignore saving the average dice metric for now
+        # state_dict["avg_dice"] = avg_dice
+        filename = self.save_global_path/f"global_model_round_{server_round}.pth"
 
-        # construct artifact to save
-        to_save = {'ndarrays': ndarrays, 'avg_dice': avg_dice}
-
-        with open(filename, 'wb') as h:
-            pickle.dump(to_save, h, protocol=pickle.HIGHEST_PROTOCOL)
+        torch.save(state_dict, filename)
         
         log(INFO, f"Saved new model into: {filename}")
 
