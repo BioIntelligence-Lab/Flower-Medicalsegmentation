@@ -4,6 +4,16 @@ This repository is maintained to develop and test the [Flower framework](https:/
 
 This code is inspired by the official [Flower FedBN tutorial](https://flower.dev/docs/fedbn-example-pytorch-from-centralized-to-federated.html) 
 
+# 🚀 Live Demo Instructions Coming Soon! 📢
+
+We are excited to announce that we will be presenting a live demo at the DCAMI workshop at CVPR 2024! 🎉
+Please stay tuned for detailed instructions on how to run the demo, which will be posted here shortly. 🙌
+
+In the meantime, feel free to explore the repository and familiarize yourself with the codebase. 🔍
+If you have any questions or concerns, please don't hesitate to reach out by creating an issue or contacting us directly. 📩
+
+We look forward to showcasing our work and engaging with the community at CVPR 2024! 🤖🌟
+
 ## Environment Setup
 
 ```bash
