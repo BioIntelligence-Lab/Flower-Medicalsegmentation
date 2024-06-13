@@ -106,3 +106,12 @@ flower-server-app server:app --insecure --server=<SUPERLINK_SERVER_IP>
 ```
 
 You'll notice once the N rounds finish, the `SuperLink` and `SuperNode` remain idle. You can launch another `ServerApp` to start a new experiment (yes, without having to restart the `SuperNode` or `SuperLink`)
+
+## How to Use the Model Modification Script
+
+If you are collaborating with other setups that have trained other tasks and you want to incorporate the head from the other project into your own global model to run the new task, we have included a Python script designed to create a new UNet model with the new modified task block having a different number of output channels. To use this script, follow these steps:
+
+Execute the script from the command line with the necessary arguments. The script requires the paths to two existing model state dictionaries, the desired number of output channels for the new task block, and the path to save the new model.
+
+```sh
+python merge_modify_model.py --model_1_path /path/to/model_1.pth --model_2_path /path/to/model_2.pth --out_channels 4 --save_path /path/to/save_new_model.pth
