@@ -143,7 +143,8 @@ strategy = AggregateCustomMetricStrategy(
     total_rounds=rounds,
     save_global_path='global_models',
     on_fit_config_fn=get_on_fit_config_fn(),
-    evaluate_fn=get_evaluate_fn(server_dataset)) # pass your dataset here
+    # evaluate_fn=get_evaluate_fn(server_dataset) # pass your dataset here
+    )
 
 # Flower ServerApp
 # Launch via `flower-server-app server:app`
