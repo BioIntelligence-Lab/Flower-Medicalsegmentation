@@ -134,7 +134,7 @@ def get_evaluate_fn(server_dataset):
 
     return evaluate
 
-rounds = 100
+rounds = 3
 server_dataset = None # load dataset/dataloader
 config = ServerConfig(num_rounds=rounds)
 
@@ -159,7 +159,7 @@ def main():
     log(INFO, "PLEASE LOAD YOUR SERVER-SIDE dataset")
     server_dataset = None # load dataset/dataloader
 
-    rounds = 100
+    rounds = 3
 
     # Create strategy and run server
     strategy = AggregateCustomMetricStrategy(
