@@ -92,17 +92,17 @@ Next, you'll need your `SuperNode` (i.e. nodes containing the data that will eve
 
 ```bash
 # launches supernode wich will execute the the `ClientApp` in `client_spleen.py`
-flower-client-app client_spleen:app --insecure --server=<SUPERLINK_SERVER_IP>
+flower-client-app client_spleen:app --insecure --superlink=<SUPERLINK_SERVER_IP>
 
 # launch supernode pointing to a `ClientApp` making use of the pancreas data
-flower-client-app client_pan:app --insecure --server=<SUPERLINK_SERVER_IP>
+flower-client-app client_pan:app --insecure --superlink=<SUPERLINK_SERVER_IP>
 ```
 When client save a model, they will follwow the directory structure: `save-path/date/time/<model>`
 
 With the above done, you'll see nothing seems to happen. The `SuperNodes` periodically ping the `SuperLink` for messages that the `ServerApp` (which we haven't launched yet) is sending them. Without further due, let's launch the `ServerApp` to start the federation:
 
 ```bash
-flower-server-app server:app --insecure --server=<SUPERLINK_SERVER_IP>
+flower-server-app server:app --insecure --superlink=<SUPERLINK_SERVER_IP>
 ```
 
 You'll notice once the N rounds finish, the `SuperLink` and `SuperNode` remain idle. You can launch another `ServerApp` to start a new experiment (yes, without having to restart the `SuperNode` or `SuperLink`)
