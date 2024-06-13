@@ -6,8 +6,8 @@ This code is inspired by the official [Flower FedBN tutorial](https://flower.dev
 
 # 🚀 Live Demo Instructions Coming Soon! 📢
 
-We are excited to announce that we will be presenting a live demo at the DCAMI workshop at CVPR 2024! 🎉
-Please stay tuned for detailed instructions on how to run the demo, which will be posted here shortly. 🙌
+We are excited to announce our paper was accepted at the DCAMI workshop at CVPR 2024! We will present a live demo with the ability to connect your own server and supernodes and be a part of an international federation! 🎉
+Please stay tuned for detailed instructions on connecting to the Flower SuperLink, which will be posted here shortly. 🙌
 
 In the meantime, feel free to explore the repository and familiarize yourself with the codebase. 🔍
 If you have any questions or concerns, please don't hesitate to reach out by creating an issue or contacting us directly. 📩
