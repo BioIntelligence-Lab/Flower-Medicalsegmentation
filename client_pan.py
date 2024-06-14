@@ -134,7 +134,7 @@ def client_fn(cid: str):
 
 # Flower ClientApp
 # Load data
-trainloader, testloader, num_examples = msd.load_data(data_dir_pan, -87, 199)
+trainloader, testloader, num_examples = msd.load_data(PANCREAS_PATH, -87, 199)
 # Launch via `flower-client-app client_pan:app`
 app = ClientApp(
     client_fn=client_fn,

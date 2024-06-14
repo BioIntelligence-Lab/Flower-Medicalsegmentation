@@ -21,7 +21,7 @@ USE_FEDBN: bool = True
 
 # pylint: disable=no-member
 DEVICE: str = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-SPLEEN_PATH = "dataset/Task09_Spleen" # used in Flower Next mode
+SPLEEN_PATH = "./dataset/Task09_Spleen" # used in Flower Next mode
 SAVE_PATH = "output-spleen" # used in Flower Next mode
 
 
@@ -139,7 +139,7 @@ def client_fn(cid: str):
 
 # Flower ClientApp
 # Load data
-trainloader, testloader, num_examples = msd.load_data(data_dir_spleen, -57, 164)
+trainloader, testloader, num_examples = msd.load_data(SPLEEN_PATH, -57, 164)
 # Launch via `flower-client-app client_spleen:app`
 app = ClientApp(
     client_fn=client_fn,
