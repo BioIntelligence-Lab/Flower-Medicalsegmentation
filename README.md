@@ -107,9 +107,14 @@ flower-server-app server:app --insecure --superlink=<SUPERLINK_SERVER_IP>
 
 You'll notice once the N rounds finish, the `SuperLink` and `SuperNode` remain idle. You can launch another `ServerApp` to start a new experiment (yes, without having to restart the `SuperNode` or `SuperLink`)
 
-## How to Use the Model Modification Script
+## Seamless Collaboration Across Institutions Using Modifiable Task Blocks in Superlink Models
 
-If you are collaborating with other setups that have trained other tasks and you want to incorporate the head from the other project into your own global model to run the new task, we have included a Python script designed to create a new UNet model with the new modified task block having a different number of output channels. To use this script, follow these steps:
+When multiple institutions collaborate on a project using the superlink, each institution may focus on training different tasks. As a result, they will have separate models with the same representation block but different task blocks tailored to their specific tasks.
+To facilitate seamless collaboration, each institution will have a copy of the global model on their server. 
+
+We have provided a Python script that allows an institution to modify the task block from another institution's model, enabling them to run inference for the new task, even if they have never trained on that particular data.
+
+This approach ensures that institutions can easily collaborate and leverage each other's work, even if they have focused on different tasks during training.
 
 Execute the script from the command line with the necessary arguments. The script requires the paths to two existing model state dictionaries, the desired number of output channels for the new task block, and the path to save the new model.
 
