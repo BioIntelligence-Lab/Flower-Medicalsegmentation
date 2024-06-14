@@ -34,7 +34,7 @@ def replace_task_block(model, out_channels):
     task_block_state_dict = task_block.state_dict()
     
     for name, param in task_block_state_dict.items():
-        if "outc" in name:
+        if "model.2" in name:
             new_state_dict[name] = param
     
     model.load_state_dict(new_state_dict)
@@ -68,7 +68,7 @@ def main(args):
     # Extract representation block from model_1
     repr_block_1 = OrderedDict()
     for name, param in model_1.named_parameters():
-        if "outc" not in name:
+        if "model.2" not in name:
             repr_block_1[name] = param
 
     # Create new models with different out_channels
