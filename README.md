@@ -10,7 +10,7 @@ For the live demo at the CVPR workshop, we have set up a SuperLink server hosted
 
 #### Please follow these steps:
 
-Obtain the SSL certificate to connect to the federation using the google form provided to you at the workshop. Upon submission, you will be able to download the certificate.
+Obtain the SSL certificate to connect to the federation using the google form provided to you at the workshop. Upon submission, you will be able to download the certificate. Please keep the certificate in the root directory of this project. 
 
 Clone this repository:
 ```bash
@@ -21,13 +21,13 @@ Please follow the instructions in the "Environment Setup" section of the README 
 
 ## Connect to the SuperLink:
 
-### To connect as a server:
+### To connect as a server (recommended):
 ```bash
 flower-server-app server:app --superlink="cvpr.link.flower.ai:9091" --root-certificates=/path/to/demo.crt
 ```
 The server will run for 3 rounds by default for demonstration purposes.
 
-### To connect as a spleen supernode (recommended):
+### To connect as a spleen supernode :
 ```bash
 flower-client-app client_spleen:app --superlink="cvpr.link.flower.ai:9092" --root-certificates=/path/to/demo.crt
 ```
