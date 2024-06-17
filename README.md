@@ -2,17 +2,39 @@
 
 This repository is maintained to develop and test the [Flower framework](https://flower.ai/) for 3D medical image segmentation using the data from the Medical Segmentation Decathalon challenge.
 
-This code is inspired by the official [Flower FedBN tutorial](https://flower.dev/docs/fedbn-example-pytorch-from-centralized-to-federated.html) 
-
-# 🚀 Live Demo Instructions Coming Soon! 📢
+# 🚀 Live Demo Instructions! 📢
 
 We are excited to announce our paper was accepted at the DCAMI workshop at CVPR 2024! We will present a live demo with the ability to connect your own server and supernodes and be a part of an international federation! 🎉
-Please stay tuned for detailed instructions on connecting to the Flower SuperLink, which will be posted here shortly. 🙌
 
-In the meantime, feel free to explore the repository and familiarize yourself with the codebase. 🔍
-If you have any questions or concerns, please don't hesitate to reach out by creating an issue or contacting us directly. 📩
+For the live demo at the CVPR workshop, we have set up a SuperLink server hosted by Flower that you can connect to. To ensure secure communication, an SSL certificate is required. 
 
-We look forward to showcasing our work and engaging with the community at CVPR 2024! 🤖🌟
+#### Please follow these steps:
+
+Obtain the SSL certificate to connect to the federation using the google form provided to you at the workshop. Upon submission, you will be able to download the certificate.
+
+Clone this repository:
+```bash
+git clone https://github.com/UM2ii/Flower-Medicalsegmentation.git
+cd Flower-Medicalsegmentation
+```
+Please follow the instructions in the "Environment Setup" section of the README to download and process the dataset. We recommend using the MSD Spleen dataset for easier training and setup. 
+
+## Connect to the SuperLink:
+
+### To connect as a server:
+```bash
+flower-server-app server:app --superlink="cvpr.link.flower.ai:9091" --root-certificates=/path/to/demo.crt
+```
+The server will run for 3 rounds by default for demonstration purposes.
+
+### To connect as a spleen supernode (recommended):
+```bash
+flower-client-app client_spleen:app --superlink="cvpr.link.flower.ai:9092" --root-certificates=/path/to/demo.crt
+```
+Make sure to point to the correct dataset path in the client_spleen.py script.
+
+Please note that while this is a fully configurable deployed system, it is still a demonstration and not fully productionized. The number of rounds and other parameters can be adjusted in the server.py script.
+If you have any questions or encounter issues, please don't hesitate to reach out.
 
 ## Environment Setup
 
@@ -120,3 +142,6 @@ Execute the script from the command line with the necessary arguments. The scrip
 
 ```sh
 python merge_modify_model.py --model_1_path /path/to/model_1.pth --model_2_path /path/to/model_2.pth --out_channels 4 --save_path /path/to/save_new_model.pth
+```
+
+This code is inspired by the official [Flower FedBN tutorial](https://flower.dev/docs/fedbn-example-pytorch-from-centralized-to-federated.html). Thanks to everyone at team Flower for their support! 

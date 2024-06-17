@@ -106,7 +106,7 @@ class MSDClient(fl.client.NumPyClient):
 
         # Set model parameters, train model, return updated model parameters
         self.set_parameters(parameters)
-        msd.train(self.model, self.trainloader, max_epochs=10, device=DEVICE)
+        msd.train(self.model, self.trainloader, max_epochs=5, device=DEVICE) # Default 10
         #torch.save(self.model.state_dict(), os.path.join(root_dir, "best_metric_model_pan_128_segviz_flwr.pth"))
         return self.get_parameters(config={}), self.num_examples["trainset"], {}
 

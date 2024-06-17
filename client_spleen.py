@@ -105,12 +105,11 @@ class MSDClient(fl.client.NumPyClient):
         if config['save_model']:
             print("SAVE MODEL!! -- must implement")
 
-            #TODO: save model into self.path
             torch.save(self.model.state_dict(), str(self.path / f"spleen_local_model_round_{config['current_round']}.pth"))
 
         # Set model parameters, train model, return updated model parameters
         self.set_parameters(parameters)
-        msd.train(self.model, self.trainloader, max_epochs=10, device=DEVICE)
+        msd.train(self.model, self.trainloader, max_epochs=5, device=DEVICE) # Default 10
         
         #torch.save(self.model.state_dict(), os.path.join(root_dir, "best_metric_model_spleen_128_segviz_flwr.pth"))        
         
